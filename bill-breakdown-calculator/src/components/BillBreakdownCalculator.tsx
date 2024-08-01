@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Info, PlusCircle, Trash2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const BillBreakdownCalculator = () => {
   const [participants, setParticipants] = useState([
@@ -13,46 +15,51 @@ const BillBreakdownCalculator = () => {
   const [paymentInstructions, setPaymentInstructions] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
+  const [error, setError] = useState('');
 
-  const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A'];
+  const colors = useMemo(() => ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A'], []);
 
   useEffect(() => {
     calculateBreakdown();
   }, [participants]);
 
   const addParticipant = () => {
-    setParticipants([...participants, { id: participants.length + 1, name: '', amount: '' }]);
+    setParticipants(prev => [...prev, { id: prev.length + 1, name: '', amount: '' }]);
   };
 
   const removeParticipant = (id) => {
-    setParticipants(participants.filter(p => p.id !== id));
+    setParticipants(prev => prev.filter(p => p.id !== id));
   };
 
   const updateParticipant = (id, field, value) => {
-    setParticipants(participants.map(p => 
-      p.id === id ? { ...p, [field]: field === 'amount' ? parseFloat(value) || 0 : value } : p
+    setParticipants(prev => prev.map(p => 
+      p.id === id ? { ...p, [field]: field === 'amount' ? (value === '' ? '' : parseFloat(value) || 0) : value } : p
     ));
   };
 
   const calculateBreakdown = () => {
-    const totalAmount = participants.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const equalSharePerPerson = totalAmount / participants.length;
+    setError('');
+    if (participants.some(p => !p.name || p.amount === '')) {
+      setError('Please fill in all participant details before calculating.');
+      setCalculations([]);
+      setPaymentInstructions([]);
+      return;
+    }
 
-    const calculatedParticipants = participants.map((p, index) => {
-      const paid = parseFloat(p.amount) || 0;
-      const balance = paid - equalSharePerPerson;
-      return {
-        ...p,
-        paid,
-        equalShare: equalSharePerPerson,
-        balance,
-        color: colors[index % colors.length]
-      };
-    });
+    const totalAmount = participants.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const participantsCount = participants.length;
+    const equalSharePerPerson = totalAmount / participantsCount;
+
+    const calculatedParticipants = participants.map((p, index) => ({
+      ...p,
+      paid: parseFloat(p.amount) || 0,
+      equalShare: equalSharePerPerson,
+      balance: (parseFloat(p.amount) || 0) - equalSharePerPerson,
+      color: colors[index % colors.length]
+    }));
 
     setCalculations(calculatedParticipants);
 
-    // Calculate payment instructions
     const payingParticipants = calculatedParticipants.filter(p => p.balance < 0);
     const receivingParticipants = calculatedParticipants.filter(p => p.balance > 0);
     const instructions = [];
@@ -77,7 +84,20 @@ const BillBreakdownCalculator = () => {
   };
 
   const handlePieClick = (_, index) => {
-    setActiveIndex(index === activeIndex ? null : index);
+    setActiveIndex(prev => prev === index ? null : index);
+  };
+
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  
+    return (
+      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
   };
 
   return (
@@ -103,6 +123,8 @@ const BillBreakdownCalculator = () => {
                 value={participant.amount}
                 onChange={(e) => updateParticipant(participant.id, 'amount', e.target.value)}
                 className="w-32"
+                min="0"
+                step="0.01"
               />
               {participants.length > 1 && (
                 <Button variant="ghost" size="icon" onClick={() => removeParticipant(participant.id)}>
@@ -117,6 +139,12 @@ const BillBreakdownCalculator = () => {
         </CardContent>
       </Card>
 
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       {calculations.length > 0 && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -128,16 +156,17 @@ const BillBreakdownCalculator = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={calculations}
+                      data={calculations.filter(c => c.paid > 0)}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
+                      label={renderCustomizedLabel}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="paid"
                       onClick={handlePieClick}
                     >
-                      {calculations.map((entry, index) => (
+                      {calculations.filter(c => c.paid > 0).map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.color}
@@ -165,10 +194,10 @@ const BillBreakdownCalculator = () => {
                     <li key={index} className={`p-2 rounded ${activeIndex === index ? 'bg-gray-100' : ''}`}>
                       <strong style={{ color: participant.color }}>{participant.name}</strong>: Paid ${participant.paid.toFixed(2)}
                       <br />
-                      <span className={participant.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                      <span className={participant.balance > 0 ? 'text-green-600' : participant.balance < 0 ? 'text-red-600' : 'text-gray-600'}>
                         {participant.balance > 0 ? `Receives $${participant.balance.toFixed(2)}` :
-                         participant.balance < 0 ? `Pays $${Math.abs(participant.balance).toFixed(2)}` :
-                         `Receives $0.00`}
+                         participant.balance < 0 ? `Owes $${Math.abs(participant.balance).toFixed(2)}` :
+                         `Balanced`}
                       </span>
                       <br />
                       <span className="text-sm text-gray-600">
@@ -215,7 +244,7 @@ const BillBreakdownCalculator = () => {
                     <li>Equal share per person: ${calculations[0].equalShare.toFixed(2)}</li>
                     <li>We calculate how much each person overpaid or underpaid compared to their equal share.</li>
                     <li>Those who paid more than their equal share will receive money, while those who paid less will need to pay.</li>
-                    <li>If the amount paid exactly matches the equal share, they will receive $0.00.</li>
+                    <li>Participants who paid $0 will need to pay their full equal share.</li>
                     <li>We then distribute the payments to balance everything out, minimizing the number of transactions needed.</li>
                   </ol>
                 </div>
