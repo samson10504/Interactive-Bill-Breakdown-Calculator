@@ -1,14 +1,30 @@
-# Interactive Bill Breakdown Calculator
+# Bill Breakdown Calculator
 
-This project is a web-based interactive bill breakdown calculator built with Next.js, React, and Tailwind CSS. It allows users to input expenses for multiple participants and calculates how to split the bill fairly, providing visualizations and payment instructions.
+[Bill Breakdown Calculator Demo](https://interactive-bill-breakdown-calculator.vercel.app/)
+
+An interactive web application built with Next.js that helps groups easily split bills and calculate who owes what.
 
 ## Features
 
-- Add multiple participants and their expenses
-- Automatically calculate equal share and balance for each participant
-- Visualize payment distribution with an interactive pie chart
-- Generate step-by-step payment instructions
-- Responsive design for various screen sizes
+- **Add Multiple Participants**: Easily input names and amounts paid by each person.
+- **Visual Breakdown**: See a clear pie chart representation of payments.
+- **Detailed Calculations**: Get a breakdown of who owes what and who should be paid back.
+- **Payment Instructions**: Receive step-by-step instructions for settling the bill.
+- **Responsive Design**: Works seamlessly on desktop and mobile devices.
+
+## Screenshots
+
+### Home Screen
+![Home Screen](img/home-screen.png)
+
+### Payment Distribution Chart
+![Payment Distribution](img/payment-distribution.png){: style="width: 50%;"}
+
+### Breakdown Summary
+![Breakdown Summary](img/breakdown-summary.png){: style="width: 50%;"}
+
+### Payment Instructions
+![Payment Instructions](img/payment-instructions.png){: style="width: 50%;"}
 
 ## Prerequisites
 
@@ -22,17 +38,17 @@ Before you begin, ensure you have met the following requirements:
 To install the Interactive Bill Breakdown Calculator, follow these steps:
 
 1. Clone the repository:
-   ```
+   ```bash
    git clone https://github.com/samson10504/Interactive-Bill-Breakdown-Calculator.git
    ```
 
 2. Navigate to the project directory:
-   ```
-   cd interactive-bill-breakdown-calculator
+   ```bash
+   cd Interactive-Bill-Breakdown-Calculator
    ```
 
 3. Install the dependencies:
-   ```
+   ```bash
    npm install
    ```
 
@@ -40,11 +56,19 @@ To install the Interactive Bill Breakdown Calculator, follow these steps:
 
 To run the Interactive Bill Breakdown Calculator, use the following command:
 
-```
+```bash
 npm run dev
 ```
 
 Then, open your web browser and navigate to `http://localhost:3000`.
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org/) - React framework for production
+- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+- [Recharts](https://recharts.org/) - Charting library built on React components
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Shadcn UI](https://ui.shadcn.com/) - Re-usable components built with Radix UI and Tailwind CSS
 
 ## Contributing
 
@@ -59,10 +83,11 @@ Contributions to the Interactive Bill Breakdown Calculator are welcome. To contr
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is open source and available under the [MIT License](LICENSE).
 
-## Contact
+## Deployment
 
-If you have any questions or feedback, please open an issue on the GitHub repository.
+This app can be easily deployed on [Vercel](https://vercel.com), the platform created by the makers of Next.js.
 
-Thank you for using or contributing to the Interactive Bill Breakdown Calculator!
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/samson10504/Interactive-Bill-Breakdown-Calculator)
+
