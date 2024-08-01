@@ -1,21 +1,50 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, PieProps } from 'recharts';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Info, PlusCircle, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const BillBreakdownCalculator = () => {
-  const [participants, setParticipants] = useState([
+interface Participant {
+  id: number;
+  name: string;
+  amount: string;
+}
+
+interface CalculatedParticipant extends Participant {
+  paid: number;
+  equalShare: number;
+  balance: number;
+  color: string;
+}
+
+interface PaymentInstruction {
+  from: string;
+  to: string;
+  amount: number;
+}
+
+interface CustomizedLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  index: number;
+}
+
+const BillBreakdownCalculator: React.FC = () => {
+  const [participants, setParticipants] = useState<Participant[]>([
     { id: 1, name: '', amount: '' }
   ]);
-  const [calculations, setCalculations] = useState([]);
-  const [paymentInstructions, setPaymentInstructions] = useState([]);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [error, setError] = useState('');
+  const [calculations, setCalculations] = useState<CalculatedParticipant[]>([]);
+  const [paymentInstructions, setPaymentInstructions] = useState<PaymentInstruction[]>([]);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
 
   const colors = useMemo(() => ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A'], []);
 
@@ -27,11 +56,11 @@ const BillBreakdownCalculator = () => {
     setParticipants(prev => [...prev, { id: prev.length + 1, name: '', amount: '' }]);
   };
 
-  const removeParticipant = (id) => {
+  const removeParticipant = (id: number) => {
     setParticipants(prev => prev.filter(p => p.id !== id));
   };
 
-  const updateParticipant = (id, field, value) => {
+  const updateParticipant = (id: number, field: 'name' | 'amount', value: string) => {
     setParticipants(prev => prev.map(p => 
       p.id === id ? { ...p, [field]: field === 'amount' ? (value === '' ? '' : parseFloat(value) || 0) : value } : p
     ));
@@ -50,7 +79,7 @@ const BillBreakdownCalculator = () => {
     const participantsCount = participants.length;
     const equalSharePerPerson = totalAmount / participantsCount;
 
-    const calculatedParticipants = participants.map((p, index) => ({
+    const calculatedParticipants: CalculatedParticipant[] = participants.map((p, index) => ({
       ...p,
       paid: parseFloat(p.amount) || 0,
       equalShare: equalSharePerPerson,
@@ -61,9 +90,9 @@ const BillBreakdownCalculator = () => {
     setCalculations(calculatedParticipants);
   
     // Create deep copies for payment calculations
-    const payingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance < 0)));
-    const receivingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance > 0)));
-    const instructions = [];
+    const payingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance < 0))) as CalculatedParticipant[];
+    const receivingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance > 0))) as CalculatedParticipant[];
+    const instructions: PaymentInstruction[] = [];
 
     payingParticipants.forEach(payer => {
       let remainingToPay = Math.abs(payer.balance);
@@ -84,11 +113,11 @@ const BillBreakdownCalculator = () => {
     setPaymentInstructions(instructions);
   };
 
-  const handlePieClick = (_, index) => {
+  const handlePieClick: PieProps['onClick'] = (_, index) => {
     setActiveIndex(prev => prev === index ? null : index);
   };
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: CustomizedLabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -229,9 +258,9 @@ const BillBreakdownCalculator = () => {
               <ul className="list-disc pl-5 space-y-2">
                 {paymentInstructions.map((instruction, index) => (
                   <li key={index}>
-                    <strong style={{ color: calculations.find(c => c.name === instruction.from).color }}>{instruction.from}</strong>
+                    <strong style={{ color: calculations.find(c => c.name === instruction.from)?.color }}>{instruction.from}</strong>
                     {' should pay '}
-                    <strong style={{ color: calculations.find(c => c.name === instruction.to).color }}>{instruction.to}</strong>
+                    <strong style={{ color: calculations.find(c => c.name === instruction.to)?.color }}>{instruction.to}</strong>
                     {' $'}{instruction.amount.toFixed(2)}
                   </li>
                 ))}
