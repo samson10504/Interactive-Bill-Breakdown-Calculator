@@ -131,56 +131,58 @@ const BillBreakdownCalculator: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-center">Interactive Bill Breakdown Calculator</h2>
+    <div className="p-2 sm:p-4 max-w-4xl mx-auto">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Interactive Bill Breakdown Calculator</h2>
       
-      <Card className="mb-6">
+      <Card className="mb-4 sm:mb-6">
         <CardHeader>
-          <h3 className="text-xl font-semibold">Add Participants</h3>
+          <h3 className="text-lg sm:text-xl font-semibold">Add Participants</h3>
         </CardHeader>
         <CardContent>
           {participants.map((participant, index) => (
-            <div key={participant.id} className="flex items-center space-x-2 mb-2">
+            <div key={participant.id} className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-3">
               <Input
                 placeholder="Name"
                 value={participant.name}
                 onChange={(e) => updateParticipant(participant.id, 'name', e.target.value)}
-                className="flex-grow"
+                className="w-full sm:w-auto flex-grow"
               />
-              <Input
-                type="number"
-                placeholder="Amount Paid"
-                value={participant.amount}
-                onChange={(e) => updateParticipant(participant.id, 'amount', e.target.value)}
-                className="w-32"
-                min="0"
-                step="0.01"
-              />
-              {participants.length > 1 && (
-                <Button variant="ghost" size="icon" onClick={() => removeParticipant(participant.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
+              <div className="flex w-full sm:w-auto items-center space-x-2">
+                <Input
+                  type="number"
+                  placeholder="Amount Paid"
+                  value={participant.amount}
+                  onChange={(e) => updateParticipant(participant.id, 'amount', e.target.value)}
+                  className="flex-grow"
+                  min="0"
+                  step="0.01"
+                />
+                {participants.length > 1 && (
+                  <Button variant="ghost" size="icon" onClick={() => removeParticipant(participant.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
-          <Button onClick={addParticipant} className="mt-2">
+          <Button onClick={addParticipant} className="mt-2 w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Participant
           </Button>
         </CardContent>
       </Card>
 
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive" className="mb-4 sm:mb-6">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {calculations.length > 0 && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6">
             <Card>
               <CardHeader>
-                <h3 className="text-xl font-semibold">Payment Distribution</h3>
+                <h3 className="text-lg sm:text-xl font-semibold">Payment Distribution</h3>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -216,7 +218,7 @@ const BillBreakdownCalculator: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <h3 className="text-xl font-semibold">Breakdown Summary</h3>
+                <h3 className="text-lg sm:text-xl font-semibold">Breakdown Summary</h3>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
@@ -240,14 +242,15 @@ const BillBreakdownCalculator: React.FC = () => {
             </Card>
           </div>
 
-          <Card className="mb-6">
+          <Card className="mb-4 sm:mb-6">
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Payment Instructions</h3>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <h3 className="text-lg sm:text-xl font-semibold">Payment Instructions</h3>
                 <Button
                   onClick={() => setShowExplanation(!showExplanation)}
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
                   <Info className="mr-2 h-4 w-4" />
                   {showExplanation ? 'Hide' : 'Show'} Explanation
