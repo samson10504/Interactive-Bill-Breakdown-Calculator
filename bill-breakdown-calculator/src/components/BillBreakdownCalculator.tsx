@@ -59,9 +59,10 @@ const BillBreakdownCalculator = () => {
     }));
 
     setCalculations(calculatedParticipants);
-
-    const payingParticipants = calculatedParticipants.filter(p => p.balance < 0);
-    const receivingParticipants = calculatedParticipants.filter(p => p.balance > 0);
+  
+    // Create deep copies for payment calculations
+    const payingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance < 0)));
+    const receivingParticipants = JSON.parse(JSON.stringify(calculatedParticipants.filter(p => p.balance > 0)));
     const instructions = [];
 
     payingParticipants.forEach(payer => {
